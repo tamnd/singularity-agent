@@ -110,3 +110,23 @@ func TestUnknownFieldIsAnError(t *testing.T) {
 		t.Fatal("a paper record with an unknown field loads with no error")
 	}
 }
+
+func TestPlannedNameIsNotAFault(t *testing.T) {
+	root := fixture(t)
+	write(t, root, "blueprint/nodes/SG00000006.yaml", "tag: SG00000006\nkind: theorem\ntitle: Dimension 2\nstatement: Dim 2.\ntier: T5\nlean:\n  statement: Singularity.ResolutionInDim\n  proof: Singularity.resolutionInDim_two\n")
+	write(t, root, "blueprint/nodes/SG00000007.yaml", "tag: SG00000007\nkind: lemma\ntitle: Open locus\nstatement: Open.\ntier: T1\nlean:\n  statement: Singularity.regularLocus_isOpen\n")
+	write(t, root, "papers/Lip78.yaml", "key: Lip78\ntitle: Desingularization of two-dimensional schemes\ntag: P\ntier: T5\nwhy: surfaces\nuse: [reuse, bridge]\n")
+	p, err := Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if probs := p.Check(); len(probs) != 0 {
+		t.Fatalf("problems: %v", probs)
+	}
+	if got := p.Node("SG00000006").Status; got != Stated {
+		t.Errorf("a statement with no proof in the records has status %s", got)
+	}
+	if got := p.Node("SG00000007").Status; got != Planned {
+		t.Errorf("a name that is not in the records has status %s", got)
+	}
+}
