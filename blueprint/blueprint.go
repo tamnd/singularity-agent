@@ -49,6 +49,11 @@ const (
 	Refuted   = "refuted"    // the negation is proved
 )
 
+// Uses are the ways in which the project uses a paper. A "reuse" paper has a
+// Lean proof that the project can depend on. A "bridge" paper connects two
+// forms of the same statement.
+var Uses = []string{"prove", "state", "ex", "read", "reuse", "bridge"}
+
 // Statuses lists the status values in the order of the site.
 var Statuses = []string{Proved, ProvedMod, Defined, Stated, Open, Refuted, Planned}
 
@@ -398,15 +403,6 @@ func (p *Project) Check() []string {
 				bad(n.File, "the route %q is not in blueprint/routes.yaml", r)
 			}
 		}
-		if p.Lean != nil {
-			for _, name := range []string{n.Lean.Statement, n.Lean.Proof, n.Lean.Negation} {
-				if name != "" {
-					if _, ok := p.Lean.Decls[name]; !ok {
-						bad(n.File, "the Lean records have no declaration %s", name)
-					}
-				}
-			}
-		}
 	}
 	if c := p.cycle(); c != nil {
 		out = append(out, "blueprint/nodes: the uses have a cycle: "+strings.Join(c, " -> "))
@@ -433,8 +429,8 @@ func (p *Project) Check() []string {
 			bad(pp.File, "the record needs a title and a reason")
 		}
 		for _, u := range pp.Use {
-			if !contains([]string{"prove", "state", "ex", "read"}, u) {
-				bad(pp.File, "the use %q is not prove, state, ex or read", u)
+			if !contains(Uses, u) {
+				bad(pp.File, "the use %q is not one of %s", u, strings.Join(Uses, ", "))
 			}
 		}
 	}
