@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows Keep a Chan
 
 ## Unreleased
 
+## 0.1.0 - 2026-11-23
+
+This release closes milestone S0 of tamnd/singularity. The code is the same as in 0.0.1. The site that `sing site build` makes from the content of S0 is live at https://singularity.tamnd.com.
+
 ## 0.0.1 - 2026-11-23
 
 ### Added
