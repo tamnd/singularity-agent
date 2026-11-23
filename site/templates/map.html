@@ -1,0 +1,19 @@
+{{define "map"}}
+<article class="node">
+{{template "trail" .}}
+{{template "head" .}}
+{{template "counts" .Site}}
+<div class="prose">
+{{.Body}}
+</div>
+<input class="filter" type="search" placeholder="Filter the nodes" aria-label="Filter the nodes">
+<table class="map" id="map-table">
+  <thead><tr><th scope="col">Status</th><th scope="col">Node</th><th scope="col">Kind</th><th scope="col">Tier</th></tr></thead>
+  <tbody>
+  {{range .Groups}}{{$g := .}}{{range .Nodes}}<tr><td><span class="mark {{mark .Status}}">{{.Status}}</span></td><td><a href="{{.URL}}">{{.Title}}</a> <code class="sub">{{.Tag}}</code></td><td>{{.Kind}}</td><td title="{{$g.Name}}">{{$g.Tier}}</td></tr>
+  {{end}}{{end}}
+  </tbody>
+</table>
+{{template "foot" .}}
+</article>
+{{end}}

@@ -1,0 +1,23 @@
+{{define "paper"}}{{$p := .Paper.Paper}}
+<article class="node">
+{{template "trail" .}}
+<header class="node-head">
+  <p class="eyebrow">{{$p.Key}} · tier {{$p.Tier}} · tag {{$p.Tag}}</p>
+  <h1>{{.Title}}</h1>
+  {{with $p.Authors}}<p class="lead">{{join . ", "}}{{with $p.Where}}. {{.}}{{end}}{{with $p.Year}}, {{.}}{{end}}.</p>{{end}}
+</header>
+<table class="checks facts">
+  <tbody>
+  <tr><th scope="row">Why</th><td>{{.Paper.Why}}</td></tr>
+  {{with $p.Use}}<tr><th scope="row">Use</th><td>{{join . ", "}}</td></tr>{{end}}
+  {{with $p.Lean}}<tr><th scope="row">In Lean</th><td>{{.}}</td></tr>{{end}}
+  {{with $p.Route}}<tr><th scope="row">Routes</th><td>{{join . ", "}}</td></tr>{{end}}
+  {{with $p.ExpertStatus}}<tr><th scope="row">Expert status</th><td>{{.}}</td></tr>{{end}}
+  {{with .Paper.Links}}<tr><th scope="row">Links</th><td>{{range .}}<a href="{{.URL}}">{{.Title}}</a> {{end}}</td></tr>{{end}}
+  </tbody>
+</table>
+{{with .Paper.Notes}}<h2>Notes</h2><div class="prose">{{.}}</div>{{end}}
+{{with .Paper.Nodes}}<h2>Nodes from this paper</h2>{{template "nodelist" .}}{{end}}
+{{template "foot" .}}
+</article>
+{{end}}

@@ -1,0 +1,63 @@
+{{define "home"}}
+<section class="hero">
+  {{with .Home.Eyebrow}}<p class="eyebrow">{{.}}</p>{{end}}
+  <h1>{{.Title}}</h1>
+  <p class="lead">{{if .LeadHTML}}{{.LeadHTML}}{{else}}{{.Lead}}{{end}}</p>
+  <p class="hero-links"><a class="button primary" href="{{url "problem/"}}">Read the problem</a> <a class="button" href="{{url "map/"}}">See the map</a> <a class="button" href="{{url "trust/"}}">What is checked</a></p>
+</section>
+
+<section aria-labelledby="counts-h">
+  <h2 id="counts-h">The map now</h2>
+  {{template "counts" .Site}}
+</section>
+
+<section aria-labelledby="doors-h">
+  <h2 id="doors-h">Where to start</h2>
+  <ul class="doors">
+    {{range .Home.Doors}}<li><a href="{{url .Path}}">{{.Title}}</a><p>{{.Text}}</p></li>
+    {{end}}
+  </ul>
+</section>
+
+<div class="prose">
+{{.Body}}
+</div>
+
+<section aria-labelledby="checks-h">
+  <h2 id="checks-h">The trust report</h2>
+  {{template "checks" .Site.Trust}}
+</section>
+{{end}}
+
+{{define "counts"}}
+<ul class="counts">
+  {{range .Counts}}<li><span class="n">{{.N}}</span> <span class="mark {{mark .Status}}">{{.Status}}</span></li>
+  {{end}}
+</ul>
+<p class="muted small">{{nodeCount}} nodes in all. A status comes from the Lean build. A proof that uses sorry or a new axiom shows as stated, not proved.</p>
+{{end}}
+
+{{define "checks"}}
+<table class="checks">
+  <tbody>
+  {{range .Checks}}<tr><td class="state"><span class="mark {{.Class}}">{{.State}}</span></td><th scope="row">{{.ID}}. {{.Question}}</th><td>{{.Note}}</td></tr>
+  {{end}}
+  </tbody>
+</table>
+{{with .Updated}}<p class="muted">Updated {{.}}.</p>{{end}}
+{{end}}
+
+{{define "trail"}}{{with .Trail}}<nav aria-label="Trail"><ol class="trail">{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}</ol></nav>{{end}}{{end}}
+
+{{define "head"}}
+<header class="node-head">
+  <h1>{{.Title}}</h1>
+  {{if .LeadHTML}}<p class="lead">{{.LeadHTML}}</p>{{else}}{{with .Lead}}<p class="lead">{{.}}</p>{{end}}{{end}}
+</header>
+{{end}}
+
+{{define "foot"}}
+<p class="page-foot">{{with .SourceURL}}<a href="{{.}}">The source of this page</a>. {{end}}{{with .MarkdownURL}}<a href="{{.}}">Markdown</a>. {{end}}Something is wrong? <a href="{{$.Site.ContentRepo}}/issues/new">Report it</a>.</p>
+{{end}}
+
+{{define "nodelist"}}<ul class="nodes">{{range .}}<li><span class="mark {{mark .Status}}">{{.Status}}</span> <a href="{{.URL}}">{{.Title}}</a> <span class="sub">{{.Kind}} · <code>{{.Tag}}</code></span></li>{{end}}</ul>{{end}}

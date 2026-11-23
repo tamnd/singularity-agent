@@ -1,0 +1,27 @@
+{{define "node"}}{{$n := .Node.Node}}
+<article class="node">
+{{template "trail" .}}
+<div class="with-side">
+<div class="main-col">
+<header class="node-head">
+  <p class="eyebrow">{{$n.Kind}} · tier {{$n.Tier}} · <code>{{$n.Tag}}</code></p>
+  <h1>{{.Title}}</h1>
+  <p><span class="mark {{mark $n.Status}}" title="{{$n.Why}}">{{$n.Status}}</span> <span class="muted small">{{$n.Why}}</span></p>
+</header>
+<div class="prose statement">
+{{.Node.Statement}}
+</div>
+{{with .Node.Notes}}<h2>Notes</h2><div class="prose">{{.}}</div>{{end}}
+{{with .Node.Uses}}<h2>Uses</h2>{{template "nodelist" .}}{{end}}
+{{with .Node.Hypotheses}}<h2>Hypotheses</h2><p class="muted small">The proof takes these nodes as hypotheses. The result is proved modulo them.</p>{{template "nodelist" .}}{{end}}
+{{with .Node.UsedBy}}<h2>Used by</h2>{{template "nodelist" .}}{{end}}
+{{template "foot" .}}
+</div>
+<aside class="side" aria-label="Context">
+{{with .Node.Lean}}<section><h2>In Lean</h2><ul>{{range .}}<li><span class="small">{{.Role}}</span> <a href="{{.URL}}"><code>{{.Name}}</code></a>{{if .Found}}<span class="sub">axioms: {{.Axioms}}</span>{{else}}<span class="sub">not in the build yet</span>{{end}}</li>{{end}}</ul></section>{{else}}<section><h2>In Lean</h2><p class="small">Not stated in Lean yet.</p></section>{{end}}
+{{with .Node.Sources}}<section><h2>Sources</h2><ul>{{range .}}<li><a href="{{.URL}}">{{.Key}}</a>{{with .Loc}}, {{.}}{{end}}<span class="sub">{{.Title}}</span></li>{{end}}</ul></section>{{end}}
+{{with .Node.Routes}}<section><h2>Routes</h2><ul>{{range .}}<li><a href="{{routeURL .ID}}">{{.ID}}. {{.Title}}</a></li>{{end}}</ul></section>{{end}}
+</aside>
+</div>
+</article>
+{{end}}

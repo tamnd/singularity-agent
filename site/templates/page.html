@@ -1,0 +1,10 @@
+{{define "page"}}
+<article class="node">
+{{template "trail" .}}
+{{template "head" .}}
+<div class="prose">
+{{.Body}}
+</div>
+{{template "foot" .}}
+</article>
+{{end}}

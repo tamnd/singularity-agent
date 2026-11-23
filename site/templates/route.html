@@ -1,0 +1,21 @@
+{{define "route"}}{{$r := .Route}}
+<article class="node">
+{{template "trail" .}}
+<header class="node-head">
+  <p class="eyebrow">Route {{$r.Route.ID}} · weight {{percent $r.Route.Weight}}</p>
+  <h1>{{$r.Route.Title}}</h1>
+</header>
+<div class="prose">
+<h2>The idea</h2>
+{{$r.Idea}}
+<h2>What is known</h2>
+{{$r.Known}}
+<h2>The key obstruction</h2>
+{{$r.Obstruction}}
+<h2>The first step</h2>
+{{$r.First}}
+</div>
+{{with $r.Nodes}}<h2>Nodes on this route</h2>{{template "nodelist" .}}{{else}}<p class="muted">No node of the map is on this route yet.</p>{{end}}
+{{template "foot" .}}
+</article>
+{{end}}

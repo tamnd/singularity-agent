@@ -1,0 +1,14 @@
+{{define "routes"}}
+<article class="node">
+{{template "trail" .}}
+{{template "head" .}}
+<div class="prose">
+{{.Body}}
+</div>
+<ul class="doors">
+  {{range .Routes}}<li><a href="{{.URL}}">{{.Route.ID}}. {{.Route.Title}}</a><p>Weight {{percent .Route.Weight}}. {{len .Nodes}} nodes.</p></li>
+  {{end}}
+</ul>
+{{template "foot" .}}
+</article>
+{{end}}
