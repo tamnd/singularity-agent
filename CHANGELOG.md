@@ -4,6 +4,8 @@ All changes that a user can see are in this file. The format follows Keep a Chan
 
 ## Unreleased
 
+## 0.0.1 - 2026-11-23
+
 ### Added
 
 - The package `blueprint` loads the nodes, the routes, the papers and the record of the Lean build of the content repository. It checks the map and computes the status of each node.
