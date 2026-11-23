@@ -1,0 +1,11 @@
+{{define "trust"}}
+<article class="node">
+{{template "trail" .}}
+{{template "head" .}}
+{{template "checks" .Site.Trust}}
+<div class="prose">
+{{.Body}}
+</div>
+<p class="page-foot">{{with .SourceURL}}<a href="{{.}}">The source of this page</a>. {{end}}The data is <a href="{{url "api/trust.json"}}">api/trust.json</a>.</p>
+</article>
+{{end}}

@@ -1,0 +1,18 @@
+{{define "papers"}}
+<article class="node">
+{{template "trail" .}}
+{{template "head" .}}
+<div class="prose">
+{{.Body}}
+</div>
+<input class="filter" type="search" placeholder="Filter the papers" aria-label="Filter the papers">
+<table class="map" id="paper-table">
+  <thead><tr><th scope="col">Key</th><th scope="col">Paper</th><th scope="col">Tag</th><th scope="col">Tier</th></tr></thead>
+  <tbody>
+  {{range .Groups}}{{$g := .}}{{range .Papers}}<tr><td><a href="{{paperURL .Key}}">{{.Key}}</a></td><td>{{.Title}}{{with .Authors}} <span class="sub">{{join . ", "}}{{end}}{{with .Year}}, {{.}}{{end}}</span></td><td>{{.Tag}}</td><td title="{{$g.Name}}">{{$g.Tier}}</td></tr>
+  {{end}}{{end}}
+  </tbody>
+</table>
+{{template "foot" .}}
+</article>
+{{end}}

@@ -1,0 +1,13 @@
+{{define "search"}}
+<article class="node">
+<header class="node-head">
+  <h1>Search</h1>
+  <p class="lead">Search the statements of the map, the papers and the pages.</p>
+</header>
+<form class="search-box big" action="" role="search" onsubmit="return false">
+  <input id="q" type="search" name="q" placeholder="For example: blowup, Abhyankar, SG" aria-label="Search" autocomplete="off" autofocus>
+</form>
+<p id="search-status" class="muted" role="status">The search needs JavaScript. Without it, use the map and the list of papers.</p>
+<ul id="results" class="results"></ul>
+</article>
+{{end}}

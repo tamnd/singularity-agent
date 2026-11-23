@@ -1,0 +1,75 @@
+/* The style of singularity.tamnd.com that Math 2.0 does not have. site.css loads first and gives the tokens, the fonts, the page frame and the themes. This file adds the claim bar, the trail, the side panel, the status marks, the counts and the tables of the map. It comes from riemann.css of riemann-agent. */
+
+.claim-bar { background: var(--warn); color: var(--text); font-size: 0.9rem; padding: 0.45rem 1.25rem; text-align: center; }
+.claim-bar a { color: inherit; text-decoration: underline; text-underline-offset: 0.18em; }
+
+/* The trail shows the level of the page: proof, chapter, step, declaration. */
+.trail { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem; margin: 0 0 1rem; padding: 0; list-style: none; font-size: 0.9rem; color: var(--muted); }
+.trail li + li::before { content: "/"; margin-right: 0.35rem; color: var(--muted); }
+.trail a { color: var(--muted); text-decoration: none; }
+.trail a:hover { color: var(--link); }
+.trail [aria-current] { color: var(--text); font-weight: 550; }
+.trail .level { font-variant-numeric: tabular-nums; background: var(--surface); padding: 0.05rem 0.4rem; margin-left: 0.2rem; font-size: 0.8rem; }
+
+/* A page with a side panel: one column on narrow screens, the panel at the right on wide screens. */
+.with-side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+.with-side > .side { order: 2; }
+@media (min-width: 64rem) {
+  .node:has(> .with-side) { max-width: calc(var(--measure) + 20.5rem); }
+  .with-side { grid-template-columns: minmax(0, var(--measure)) 17rem; gap: 3.5rem; }
+  .with-side > .side { order: 0; position: sticky; top: 4.5rem; align-self: start; max-height: calc(100vh - 6rem); overflow-y: auto; }
+}
+.side { font-size: 0.9rem; }
+.side section { background: var(--surface); padding: 0.9rem 1rem; margin-bottom: 0.9rem; }
+.side h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.5rem; font-weight: 650; }
+.side ul { list-style: none; margin: 0; padding: 0; }
+.side li { margin: 0.3rem 0; line-height: 1.35; }
+.side li .sub { display: block; overflow-wrap: anywhere; color: var(--muted); font-size: 0.8rem; }
+.side code { background: none; padding: 0; font-size: 0.82rem; word-break: break-word; }
+
+/* The status of a step, a chapter or a check. */
+.mark { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 0.05rem 0.45rem; background: var(--surface-2); color: var(--soft); white-space: nowrap; }
+.mark.yes { background: hsl(140 45% var(--tint-l)); color: hsl(140 50% var(--ink-l)); }
+.mark.no { background: hsl(0 55% var(--tint-l)); color: hsl(0 55% var(--ink-l)); }
+.mark.open { background: var(--warn); color: var(--text); }
+
+/* The status table on the home page and on the trust page. */
+.checks { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; }
+.checks th, .checks td { text-align: left; padding: 0.55rem 0.75rem 0.55rem 0; border-bottom: 1px solid var(--surface-2); vertical-align: top; }
+.checks th { font-weight: 600; }
+.checks td.state { white-space: nowrap; width: 1%; }
+
+/* The entry points of the home page, one for each kind of reader. */
+.doors { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin: 1.2rem 0 2rem; padding: 0; list-style: none; }
+.doors li { background: var(--surface); padding: 1rem 1.1rem; position: relative; }
+.doors li:hover { background: var(--surface-2); }
+.doors a { font-weight: 650; text-decoration: none; }
+.doors a::after { content: ""; position: absolute; inset: 0; }
+.doors p { margin: 0.35rem 0 0; color: var(--soft); font-size: 0.92rem; }
+.page-foot { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--surface-2); font-size: 0.85rem; color: var(--muted); }
+.page-foot a { color: var(--muted); }
+.facts th { width: 8rem; white-space: nowrap; color: var(--muted); font-weight: 550; }
+.facts td { overflow-wrap: anywhere; }
+.facts .sub { color: var(--muted); font-size: 0.85rem; }
+.small { font-size: 0.82rem; }
+.prose p code, .prose li code, .prose td code { overflow-wrap: anywhere; }
+.prose pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* The counts of the statuses. */
+.counts { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; list-style: none; margin: 1rem 0 0.5rem; padding: 0; }
+.counts li { display: flex; align-items: baseline; gap: 0.4rem; }
+.counts .n { font-size: 1.6rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+
+/* The map and the list of papers. */
+input.filter { width: 100%; max-width: 24rem; margin: 1rem 0 0.5rem; padding: 0.45rem 0.7rem; font: inherit; border: 1px solid var(--surface-2); background: var(--bg); color: var(--text); }
+table.map { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1.5rem; }
+table.map th, table.map td { text-align: left; padding: 0.45rem 0.75rem 0.45rem 0; border-bottom: 1px solid var(--surface-2); vertical-align: top; }
+table.map thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 650; }
+table.map td:first-child { white-space: nowrap; width: 1%; }
+.sub { color: var(--muted); font-size: 0.82rem; }
+code.sub { background: none; padding: 0; }
+ul.nodes { list-style: none; margin: 0.5rem 0 1.5rem; padding: 0; }
+ul.nodes li { margin: 0.35rem 0; line-height: 1.4; }
+ul.nodes code { background: none; padding: 0; font-size: 0.8rem; }
+.statement { background: var(--surface); padding: 0.9rem 1.1rem; margin: 1rem 0 1.5rem; }
+.eyebrow code { background: none; padding: 0; }
