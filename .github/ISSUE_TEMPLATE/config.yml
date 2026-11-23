@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: A milestone or a node of the map
+    url: https://github.com/tamnd/singularity/issues
+    about: The milestone issues and the issues for the map are in the content repository.
+  - name: A problem with the Lean code
+    url: https://github.com/tamnd/singularity-lean/issues
+    about: Report a build result or a statement fault there.
