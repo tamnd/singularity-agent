@@ -1,4 +1,4 @@
-// Command sing is the toolchain of singularity. It checks the map of the content repository, prints the status of each node, copies the record of the Lean build and builds the site singularity.tamnd.com.
+// Command sing is the toolchain of singularity. It checks the map of the content repository, prints the status of each node, copies the record of the Lean build, runs the experiments of the lab and builds the site singularity.tamnd.com.
 //
 // Exit codes: 0 for success, 1 for a failed check or a failed run, 2 for a usage error, and 3 for a command that is not written yet.
 package main
@@ -35,7 +35,7 @@ func commands() []command {
 		{name: "index", summary: "check the record of the Lean build and copy it to records/lean.json", run: runIndex},
 		{name: "site", summary: "build, check or serve the site", run: runSite},
 		{name: "trust", summary: "run the axiom check and the kernel replay, and write the trust report", milestone: "S1"},
-		{name: "lab", summary: "run an experiment of the lab with Singular, Macaulay2 or sing-lab", milestone: "S3"},
+		{name: "lab", summary: "run an experiment of the lab with sing-lab, list the runs, or check one blowup", run: runLab},
 		{name: "draft", summary: "draft a proof of a node with a model, within the budget", milestone: "S3"},
 	}
 }

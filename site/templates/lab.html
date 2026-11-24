@@ -1,0 +1,94 @@
+{{define "lab"}}
+<article class="node">
+{{template "trail" .}}
+{{template "head" .}}
+<div class="prose">
+{{.Body}}
+</div>
+{{range .LabRuns}}
+<section class="lab-run" aria-labelledby="run-{{.Rec.ID}}">
+  <h2 id="run-{{.Rec.ID}}"><a href="{{.URL}}">{{.Rec.ID}}</a></h2>
+  {{template "labfacts" .}}
+  {{template "labdata" .}}
+</section>
+{{else}}
+<p class="muted">The lab has no runs yet.</p>
+{{end}}
+{{template "foot" .}}
+</article>
+{{end}}
+
+{{define "labrun"}}{{$r := .Lab}}
+<article class="node">
+{{template "trail" .}}
+<header class="node-head">
+  <p class="eyebrow">Lab · {{$r.Rec.Experiment}}</p>
+  <h1>{{$r.Rec.ID}}</h1>
+</header>
+{{template "labfacts" $r}}
+{{template "labdata" $r}}
+<h2>The summary</h2>
+<div class="prose">
+{{.Body}}
+</div>
+{{template "foot" .}}
+</article>
+{{end}}
+
+{{define "labfacts"}}
+<table class="checks facts">
+  <tbody>
+  <tr><th scope="row">Question</th><td>{{.Rec.Question}}</td></tr>
+  <tr><th scope="row">Node</th><td><a href="{{.Node.URL}}">{{.Node.Title}}</a> <span class="sub"><code>{{.Node.Tag}}</code></span>{{with .Nodes}}<br><span class="sub">Also: {{range $i, $n := .}}{{if $i}}, {{end}}<a href="{{$n.URL}}">{{$n.Tag}}</a>{{end}}</span>{{end}}</td></tr>
+  <tr><th scope="row">Spec</th><td><a href="{{.SpecURL}}"><code>{{.Rec.Spec}}</code></a> <span class="sub">sha256 {{printf "%.12s" .Rec.SpecSHA256}}{{with .Rec.Seed}}, seed {{.}}{{end}}</span>{{with .Rec.WalksFrom}}<br><span class="sub">The walks of <code>{{.Spec}}</code>.</span>{{end}}</td></tr>
+  <tr><th scope="row">Counts</th><td>{{with .Rec.Counts}}{{.Cases}} cases, {{.Walks}} walks, {{.Steps}} steps, {{.Kangaroo}} kangaroo points, {{.MohViolations}} steps over the bound of Moh, {{.Stability}} walks over the stability bound{{if .Failures}}, {{.Failures}} failures of candidates{{end}}.{{end}}</td></tr>
+  <tr><th scope="row">Run</th><td>{{.Rec.Tool}} in sing {{.Rec.Sing.Version}}{{with .ToolURL}}, <a href="{{.}}">commit {{short $.Rec.Sing.Commit}}</a>{{end}}. {{.Wall}} on {{.Rec.Host}}, started {{.Rec.Started}}.{{with .Rec.Raw}} {{.}}{{end}}</td></tr>
+  <tr><th scope="row">Files</th><td>{{range $i, $f := .Files}}{{if $i}}, {{end}}<a href="{{$f.URL}}">{{$f.Name}}</a> <span class="sub">{{$f.Size}}</span>{{end}}</td></tr>
+  </tbody>
+</table>
+{{end}}
+
+{{define "labdata"}}
+{{with .Cases}}
+<div class="prose">
+<table>
+  <thead><tr><th>p</th><th>n</th><th>q</th><th>walks</th><th>steps</th><th>kangaroo points</th><th>largest increase</th><th>p^(e-1)</th><th>over p^(e-1)</th><th>over d0 + p^(e-1)</th></tr></thead>
+  <tbody>
+  {{range .}}<tr><td>{{.P}}</td><td>{{.N}}</td><td>{{.Q}}</td><td>{{.Walks}}</td><td>{{.Steps}}</td><td>{{.Kangaroo}}</td><td>{{.MaxIncrease}}</td><td>{{.MohBound}}</td><td>{{.Moh}}</td><td>{{.Stability}}</td></tr>
+  {{end}}
+  </tbody>
+</table>
+<table>
+  <thead><tr><th>p</th><th>n</th><th>q</th><th>steps with d' &lt; d</th><th>steps with d' = d</th><th>steps with d' &gt; d: the increase and the number of steps</th></tr></thead>
+  <tbody>
+  {{range $.Changes}}<tr><td>{{.P}}</td><td>{{.N}}</td><td>{{.Q}}</td><td>{{.Down}}</td><td>{{.Zero}}</td><td>{{.Up}}</td></tr>
+  {{end}}
+  </tbody>
+</table>
+<p class="muted small">A kangaroo point is a step where the residual order goes up. The bound of Moh for one step is p^(e-1). The last column counts the walks where the residual order goes above d0 + p^(e-1), with d0 the residual order at the start.{{with $.Examples}} <a href="{{.}}">The examples</a> have the polynomial, the divisor, the chart and the translations of each point.{{end}}</p>
+</div>
+{{end}}
+{{with .Cands}}
+<div class="prose">
+<table>
+  <thead><tr><th>candidate</th><th>steps</th><th>failures</th><th>the first failure</th></tr></thead>
+  <tbody>
+  {{range .Totals}}<tr><td><code>{{.ID}}</code></td><td>{{.Steps}}</td><td>{{.Fail}}</td><td>{{if .FirstCase}}{{.FirstCase}}{{else}}none{{end}}</td></tr>
+  {{end}}
+  </tbody>
+</table>
+<p class="muted small">A candidate fails at a step when its value goes up. No failure on these walks does not prove that the candidate goes down.</p>
+</div>
+{{end}}
+{{with .Fixed}}
+<div class="prose">
+<table>
+  <thead><tr><th>step</th><th>label</th><th>chart</th><th>residual order</th><th>the source</th></tr></thead>
+  <tbody>
+  {{range .Steps}}<tr><td>{{.Index}}</td><td>{{.Label}}</td><td>{{if .Chart}}{{.Chart}}-chart{{range $k, $v := .Translate}}, {{$k}} -> {{$k}}+{{$v}}{{end}}{{else}}start{{end}}</td><td>{{.State.D}}</td><td>{{with .Expect}}{{.}}{{end}}{{if .Match}}{{if not (deref .Match)}} (no match){{end}}{{end}}</td></tr>
+  {{end}}
+  </tbody>
+</table>
+</div>
+{{end}}
+{{end}}
