@@ -1,6 +1,6 @@
 // Package site builds singularity.tamnd.com from the content repository tamnd/singularity.
 //
-// The site has the main page, the pages of site/, the map with one page for each node, the papers with one page for each record, the routes, the trust report and a search page. People read the HTML. Agents read the same text as Markdown next to each page, the JSON in api/ and llms.txt. The style is the style of Math 2.0. The build renders the math to MathML with the katex package of math2-agent, so a page shows its math with JavaScript off.
+// The site has the main page, the pages of site/, the map with one page for each node, the papers with one page for each record, the routes, the runs of the lab, the trust report and a search page. People read the HTML. Agents read the same text as Markdown next to each page, the JSON in api/ and llms.txt. The style is the style of Math 2.0. The build renders the math to MathML with the katex package of math2-agent, so a page shows its math with JavaScript off.
 package site
 
 import (
@@ -65,6 +65,7 @@ var Menu = []MenuItem{
 	{Path: "map/", Section: "map", Question: "What is stated and what is proved?", Text: "Map"},
 	{Path: "routes/", Section: "routes", Question: "How could the open case be attacked?", Text: "Routes"},
 	{Path: "paper/", Section: "paper", Question: "Which papers does the project use?", Text: "Papers"},
+	{Path: "lab/", Section: "lab", Question: "What do the computations show?", Text: "Lab"},
 	{Path: "learn/", Section: "learn", Question: "What do I need to know first?", Text: "Learn"},
 	{Path: "trust/", Section: "trust", Question: "What is checked?", Text: "Trust"},
 }
@@ -214,6 +215,8 @@ type view struct {
 	Paper       *PaperData
 	Route       *RouteData
 	Routes      []RouteData
+	Lab         *LabRun
+	LabRuns     []LabRun
 	Body        template.HTML
 	Content     template.HTML
 	SourceURL   string
@@ -231,6 +234,7 @@ type builder struct {
 	md    *markup.Markdown
 	tex   *katex.Renderer
 	views []*view
+	runs  []LabRun
 }
 
 // Result tells what Build wrote.
@@ -287,6 +291,7 @@ func Build(ctx context.Context, opt Options) (*Result, error) {
 		"nodeCount": func() int { return len(proj.Nodes) },
 		"paperURL":  PaperURL,
 		"routeURL":  RouteURL,
+		"deref":     func(b *bool) bool { return b != nil && *b },
 	}).ParseFS(templateFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("site: templates: %w", err)
@@ -425,6 +430,10 @@ func (b *builder) collect() error {
 	if err != nil {
 		return fmt.Errorf("site: %w", err)
 	}
+	if b.runs, err = b.labRuns(); err != nil {
+		return err
+	}
+	hasLab := false
 	for _, rel := range pages {
 		front, body, err := readDoc(b.opt.Content, rel)
 		if err != nil {
@@ -453,12 +462,25 @@ func (b *builder) collect() error {
 			if v.Routes, err = b.routeData(); err != nil {
 				return err
 			}
+		case "lab":
+			v.Path, v.Section, v.tmpl = "lab/", "lab", "lab"
+			v.Trail = append(home(), Crumb{Text: "Lab", Current: true})
+			v.LabRuns = b.runs
+			hasLab = true
 		default:
 			v.Path, v.Section, v.tmpl = name+"/", name, "page"
 			v.Trail = append(home(), Crumb{Text: front.Title, Current: true})
 		}
 		b.add(v)
 	}
+	if !hasLab {
+		b.add(&view{
+			Path: "lab/", Section: "lab", tmpl: "lab", Title: "Lab", LabRuns: b.runs, markdown: labDefault,
+			Lead:  "The runs of the computation lab: the question, the counts and the outputs of each run.",
+			Trail: append(home(), Crumb{Text: "Lab", Current: true}),
+		})
+	}
+	b.labViews(b.runs)
 	if err := b.nodeViews(); err != nil {
 		return err
 	}
@@ -718,6 +740,7 @@ func (b *builder) write() (*Result, error) {
 	}); err != nil {
 		return nil, err
 	}
+	b.labCopy(w, b.runs)
 	b.machine(w)
 	if w.err != nil {
 		return nil, fmt.Errorf("site: %w", w.err)

@@ -4,6 +4,17 @@ All changes that a user can see are in this file. The format follows Keep a Chan
 
 ## Unreleased
 
+### Added
+
+- `sing lab run`, `sing lab list` and `sing lab step`: the computation lab of spec 13. The engine is in the new package `lab`, in Go and not in Rust as spec 13 planned. The specs name the tool `sing-lab`.
+- The package `lab` works with f = z^q + F over F_p as in section 2 of Hauser and Perlega (arXiv:1802.05010): cleaning, the residual order along a divisor and point blowups with translations. Unit tests check the residual orders of the examples in section 3 (5 to 7) and section 4 (2 to 6 to 5) of that paper.
+- A run writes `record.json`, the outputs and `summary.md` in `lab/runs/<id>/`. The random walks of E1 and the candidate invariants of E2 are reproducible from the seed for each number of threads.
+- The site has the page `/lab/` with the runs and a page for each run, with its files. The menu and the footer link to it.
+
+### Changed
+
+- `sing lab` runs. It no longer exits with code 3.
+
 ## 0.1.0 - 2026-11-23
 
 This release closes milestone S0 of tamnd/singularity. The code is the same as in 0.0.1. The site that `sing site build` makes from the content of S0 is live at https://singularity.tamnd.com.
