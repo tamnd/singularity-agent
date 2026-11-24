@@ -12,6 +12,14 @@ func short(s string, n int) string {
 	return s
 }
 
+// plural writes n and the noun, with an s when n is not 1.
+func plural(n int, noun string) string {
+	if n == 1 {
+		return "1 " + noun
+	}
+	return fmt.Sprintf("%d %ss", n, noun)
+}
+
 func header(b *strings.Builder, s *Spec, rec *Record) {
 	fmt.Fprintf(b, "# %s\n\n", s.Name)
 	fmt.Fprintf(b, "%s\n\n", s.Question)
@@ -140,7 +148,7 @@ func summaryFixed(s *Spec, rec *Record, out FixedOut, en *Engine) string {
 	if out.Source != "" {
 		fmt.Fprintf(&b, "Source: %s\n\n", out.Source)
 	}
-	fmt.Fprintf(&b, "The run starts from one given equation z^%d + F over F_%d and does %d given point blowups. At each step the order of f stays q.\n\n", out.Q, out.P, len(out.Steps)-1)
+	fmt.Fprintf(&b, "The run starts from one given equation z^%d + F over F_%d and does %s. At each step the order of f stays q.\n\n", out.Q, out.P, plural(len(out.Steps)-1, "given point blowup"))
 	b.WriteString("| step | label | chart | residual order | the source | terms of F |\n|---|---|---|---|---|---|\n")
 	for _, r := range out.Steps {
 		chart := "start"
@@ -167,7 +175,7 @@ func summaryFixed(s *Spec, rec *Record, out FixedOut, en *Engine) string {
 	} else {
 		b.WriteString("The engine does not give the value of the source at each step where the source gives a value. See the rows with no match.\n\n")
 	}
-	fmt.Fprintf(&b, "The bound of Moh for one step is p^(e-1) = %d. The sequence has %d steps where the residual order goes up, and %d of them go up by more than the bound.\n\n", en.MohBound(), rec.Counts.Kangaroo, rec.Counts.MohViolations)
+	fmt.Fprintf(&b, "The bound of Moh for one step is p^(e-1) = %d. The sequence has %s where the residual order goes up, and %d of them go up by more than the bound.\n\n", en.MohBound(), plural(rec.Counts.Kangaroo, "step"), rec.Counts.MohViolations)
 	b.WriteString("`steps.json` has the polynomial, the divisor and the invariants after each step.\n\n")
 	if s.Notes != "" {
 		fmt.Fprintf(&b, "## Notes\n\n%s\n\n", strings.TrimSpace(s.Notes))
