@@ -283,40 +283,52 @@ func (en *Engine) orderAtLeast(n int, low []Term, g Exp, pt Point) bool {
 		}
 	}
 	p := uint32(en.P) // #nosec G115 -- p is small
-	for _, t := range low {
+	// The transform has order at least q when its parts of degree 1 to q-1 are zero. The test computes them one degree at a time and stops at the first part that is not zero, so a point where the order drops costs little. The part of degree 0 is the constant term, which does not count.
+	bases := make([]Exp, len(low))
+	bdegs := make([]int, len(low))
+	for k, t := range low {
 		deg := t.E.Deg()
-		var base Exp
-		base[pt.J] = uint32(deg - q) // #nosec G115 -- the degree is at least q
-		bdeg := deg - q
+		bases[k][pt.J] = uint32(deg - q) // #nosec G115 -- the degree is at least q
+		bdegs[k] = deg - q
 		for i := range n {
 			if i != pt.J && pt.T[i] == 0 {
-				base[i] = t.E[i]
-				bdeg += int(t.E[i])
+				bases[k][i] = t.E[i]
+				bdegs[k] += int(t.E[i])
 			}
 		}
-		if bdeg >= q {
-			continue
-		}
-		en.lowProduct(tr, t.E, s, pt, 0, base, q-1-bdeg, t.C, p)
 	}
-	delete(en.low.m, Exp{}) // the constant term: see OrderAtLeast
-	ok := len(en.low.m) == 0
-	clear(en.low.m)
-	return ok
+	for deg := 1; deg < q; deg++ {
+		for k, t := range low {
+			if bdegs[k] <= deg {
+				en.lowProduct(tr, t.E, s, pt, 0, bases[k], deg-bdegs[k], t.C, p)
+			}
+		}
+		if len(en.low.m) > 0 {
+			clear(en.low.m)
+			return false
+		}
+	}
+	return true
 }
 
-func (en *Engine) lowProduct(tr []int, a, s Exp, pt Point, k int, e Exp, budget int, c, p uint32) {
+// lowProduct adds the terms of degree exactly rest in the translated variables tr[k:] of the product of the expansions of (x_i + t_i)^(a_i - s_i), times c x^e.
+func (en *Engine) lowProduct(tr []int, a, s Exp, pt Point, k int, e Exp, rest int, c, p uint32) {
 	if k == len(tr) {
-		en.low.add(e, c)
+		if rest == 0 {
+			en.low.add(e, c)
+		}
 		return
 	}
 	i := tr[k]
 	for _, x := range en.expansion(a[i]-s[i], pt.T[i]) {
-		if int(x.k) > budget {
+		if int(x.k) > rest {
 			break // the terms are sorted by k
 		}
+		if k == len(tr)-1 && int(x.k) != rest {
+			continue
+		}
 		e[i] = x.k
-		en.lowProduct(tr, a, s, pt, k+1, e, budget-int(x.k), c*x.c%p, p)
+		en.lowProduct(tr, a, s, pt, k+1, e, rest-int(x.k), c*x.c%p, p)
 	}
 }
 

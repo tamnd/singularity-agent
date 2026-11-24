@@ -1,6 +1,7 @@
 package lab
 
 import (
+	"math/rand/v2"
 	"testing"
 )
 
@@ -224,4 +225,42 @@ func allPoints(n, p int) []Point {
 		}
 	}
 	return out
+}
+
+// TestOrderAtLeastRandom compares the fast test of the order with the full transform on random polynomials, with and without the reduction of units.
+func TestOrderAtLeastRandom(t *testing.T) {
+	r := rand.New(rand.NewPCG(5, 6))
+	checked := 0
+	for _, pq := range [][2]int{{2, 2}, {2, 4}, {3, 3}, {3, 9}, {5, 5}} {
+		p, q := pq[0], pq[1]
+		for _, reduce := range []bool{false, true} {
+			en := mustEngine(t, p, q)
+			en.Reduce = reduce
+			for range 60 {
+				n := 2 + r.IntN(3)
+				a := newAcc(p)
+				for range 1 + r.IntN(5) {
+					a.add(composition(r, q+r.IntN(q+2), n), uint32(1+r.IntN(p-1))) // #nosec G115 -- small
+				}
+				f := a.poly(n).Clean(q)
+				if f.IsZero() || f.Ord() < q {
+					continue
+				}
+				for _, pt := range allPoints(n, p) {
+					g, err := en.Blowup(f, pt)
+					if err != nil {
+						t.Fatal(err)
+					}
+					g = g.Clean(q)
+					checked++
+					if got, want := en.OrderAtLeast(f, pt), g.IsZero() || g.Ord() >= q; got != want {
+						t.Fatalf("p = %d, q = %d, reduce %v, F = %s, %s: OrderAtLeast is %v, the order of the cleaned transform is %d", p, q, reduce, f.Format(Names(n)), pt.Format(Names(n)), got, g.Ord())
+					}
+				}
+			}
+		}
+	}
+	if checked < 1000 {
+		t.Errorf("only %d points", checked)
+	}
 }
