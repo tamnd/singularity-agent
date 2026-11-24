@@ -4,6 +4,8 @@ All changes that a user can see are in this file. The format follows Keep a Chan
 
 ## Unreleased
 
+## 0.2.0 - 2026-11-24
+
 ### Added
 
 - `sing lab run`, `sing lab list` and `sing lab step`: the computation lab of spec 13. The engine is in the new package `lab`, in Go and not in Rust as spec 13 planned. The specs name the tool `sing-lab`.
