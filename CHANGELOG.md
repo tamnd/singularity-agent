@@ -4,6 +4,12 @@ All changes that a user can see are in this file. The format follows Keep a Chan
 
 ## Unreleased
 
+### Added
+
+- Experiment E4 of spec 13: the candidates `cp-omega`, `cp-iota` and `cp-eps-jump`. They compute the Cossart-Piltant invariants of arXiv:1412.0868 at each step of a walk with q = p: ord F = p delta (Def. 2.11), epsilon (Def. 2.25), omega (Def. 2.68 with (2.44)) and kappa, only as 1 or at least 2 (Def. 2.68). `cp-iota` tests ι(x') ≤ ι(x) and `cp-eps-jump` tests the condition of Theorem 3.13(1) on a jump of epsilon. Both count only the steps with omega(x) > 0, the scope of Theorem 3.13. The other steps are in the new field `out_of_scope`.
+- A spec with `walks_from` can now pick cases of the E1 spec with `select` (a list of n and q). A spec with experiment E4 gets a summary that compares dimension 3 and dimension 4.
+- `sing lab step` prints delta, epsilon, omega and kappa when q = p.
+
 ## 0.2.0 - 2026-11-24
 
 ### Added

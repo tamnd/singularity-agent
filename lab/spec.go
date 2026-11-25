@@ -41,6 +41,7 @@ type Inputs struct {
 	Raw        bool     `yaml:"raw,omitempty" json:"raw,omitempty"`
 	Cases      []Case   `yaml:"cases,omitempty" json:"cases,omitempty"`
 	WalksFrom  string   `yaml:"walks_from,omitempty" json:"walks_from,omitempty"`
+	Select     []Select `yaml:"select,omitempty" json:"select,omitempty"` // with walks_from: only these cases of that spec; empty for all
 	Candidates []string `yaml:"candidates,omitempty" json:"candidates,omitempty"`
 	Fixed      *Fixed   `yaml:"fixed,omitempty" json:"fixed,omitempty"`
 }
@@ -72,6 +73,12 @@ type Case struct {
 	Terms   []int  `yaml:"terms,omitempty" json:"terms,omitempty"`
 	Divisor string `yaml:"divisor,omitempty" json:"divisor,omitempty"`
 	Depth   int    `yaml:"depth,omitempty" json:"depth,omitempty"`
+}
+
+// Select names the cases of a walks_from spec with this n and q. The run makes the walks of these cases again, with the same random sources as in that spec.
+type Select struct {
+	N int `yaml:"n" json:"n"`
+	Q int `yaml:"q" json:"q"`
 }
 
 // Fixed is one given equation z^q + F with a divisor and a given sequence of point blowups.
@@ -113,8 +120,56 @@ func LoadSpec(path string) (*Spec, error) {
 		if s.From.Inputs.WalksFrom != "" || len(s.From.Inputs.Cases) == 0 {
 			return nil, fmt.Errorf("%s: walks_from must name a spec with cases", path)
 		}
+		if err := s.checkSelect(); err != nil {
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
 	}
 	return s, nil
+}
+
+// SelectedCases returns the indices of the cases of s.From that the run uses: the cases of select, or all cases.
+func (s *Spec) SelectedCases() []int {
+	var out []int
+	for i := range s.From.Inputs.Cases {
+		c := s.From.Inputs.Case(i)
+		if len(s.Inputs.Select) == 0 {
+			out = append(out, i)
+			continue
+		}
+		for _, sel := range s.Inputs.Select {
+			if sel.N == c.N && sel.Q == c.Q {
+				out = append(out, i)
+				break
+			}
+		}
+	}
+	return out
+}
+
+// checkSelect checks that each entry of select names a case of s.From, and that a candidate of Cossart and Piltant runs only on cases with q = p.
+func (s *Spec) checkSelect() error {
+	for _, sel := range s.Inputs.Select {
+		found := false
+		for i := range s.From.Inputs.Cases {
+			if c := s.From.Inputs.Case(i); c.N == sel.N && c.Q == sel.Q {
+				found = true
+			}
+		}
+		if !found {
+			return fmt.Errorf("select: %s has no case with n = %d and q = %d", s.Inputs.WalksFrom, sel.N, sel.Q)
+		}
+	}
+	for _, id := range s.Inputs.Candidates {
+		if !CandidateByID(id).QIsP {
+			continue
+		}
+		for _, i := range s.SelectedCases() {
+			if c := s.From.Inputs.Case(i); c.Q != c.P {
+				return fmt.Errorf("the candidate %s needs q = p, and the case p = %d, n = %d, q = %d has q != p; use select", id, c.P, c.N, c.Q)
+			}
+		}
+	}
+	return nil
 }
 
 func loadOne(path string) (*Spec, error) {
@@ -168,7 +223,7 @@ func (s *Spec) check() error {
 	}
 	if in.WalksFrom != "" {
 		if len(in.Candidates) == 0 {
-			in.Candidates = candidateIDs()
+			in.Candidates = defaultCandidates()
 		}
 		for _, c := range in.Candidates {
 			if CandidateByID(c) == nil {
@@ -176,6 +231,9 @@ func (s *Spec) check() error {
 			}
 		}
 		return nil
+	}
+	if len(in.Select) > 0 {
+		return fmt.Errorf("select needs walks_from")
 	}
 	if in.Fixed != nil {
 		return in.Fixed.check()
@@ -298,6 +356,17 @@ func candidateIDs() []string {
 	var out []string
 	for _, c := range Candidates {
 		out = append(out, c.ID)
+	}
+	return out
+}
+
+// defaultCandidates are the candidates of a spec with walks_from and no list of candidates: the candidates of E2, without those of Cossart and Piltant, which need q = p.
+func defaultCandidates() []string {
+	var out []string
+	for _, c := range Candidates {
+		if !c.QIsP {
+			out = append(out, c.ID)
+		}
 	}
 	return out
 }

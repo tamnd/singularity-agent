@@ -162,6 +162,9 @@ func labStep(args []string, stdout, stderr io.Writer) error {
 			fmt.Fprintf(stdout, "after the %s-chart%s:\n", r.Chart, transText(r.Translate, fx.Vars))
 		}
 		fmt.Fprintf(stdout, "  F = %s\n  terms %d, divisor %v, order %d\n  residual order %d, terms of in(G) %d, Moh r %d, r of in(G) %d\n", r.F, r.Terms, r.Divisor, r.Order, r.State.D, r.State.N, r.State.RF, r.State.RG)
+		if cp := r.State.CP; cp.OrdF > 0 {
+			fmt.Fprintf(stdout, "  Cossart-Piltant: delta %d/%d, epsilon %d, omega %d, kappa %s\n", cp.OrdF, fx.P, r.State.D, cp.Omega, cp.Kappa)
+		}
 	}
 	return nil
 }
