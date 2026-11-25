@@ -184,13 +184,14 @@ type Failure struct {
 	ValueAfter  string `json:"value_after"`
 }
 
-// CandResult is the result of one candidate in one case.
+// CandResult is the result of one candidate in one case. Steps counts the steps in the scope of the candidate, and Skip the other steps.
 type CandResult struct {
 	ID    string   `json:"id"`
 	Steps int      `json:"steps"`
 	Fail  int      `json:"fail"`
 	Equal int      `json:"equal,omitempty"`
 	Down  int      `json:"down,omitempty"`
+	Skip  int      `json:"out_of_scope,omitempty"`
 	First *Failure `json:"first_failure,omitempty"`
 }
 
@@ -208,6 +209,7 @@ type CandDef struct {
 	ID         string `json:"id"`
 	Definition string `json:"definition"`
 	Bound      bool   `json:"bound,omitempty"`
+	Scope      string `json:"scope,omitempty"`
 }
 
 // CandTotal is the result of one candidate on all cases.
@@ -215,6 +217,7 @@ type CandTotal struct {
 	ID        string `json:"id"`
 	Steps     int    `json:"steps"`
 	Fail      int    `json:"fail"`
+	Skip      int    `json:"out_of_scope,omitempty"`
 	FirstCase string `json:"first_failure_case,omitempty"`
 }
 
@@ -362,7 +365,14 @@ func runWalks(ctx context.Context, s *Spec, opt Options, rec *Record, files map[
 		examples, stabEx = 0, 0
 	}
 	var ws []*walker
-	for i := range in.Cases {
+	idx := make([]int, len(in.Cases))
+	for i := range idx {
+		idx[i] = i
+	}
+	if s.From != nil {
+		idx = s.SelectedCases()
+	}
+	for _, i := range idx {
 		c := in.Case(i)
 		if opt.Walks > 0 {
 			c.Walks = min(c.Walks, opt.Walks)
@@ -398,7 +408,7 @@ func runWalks(ctx context.Context, s *Spec, opt Options, rec *Record, files map[
 	exs := Examples{Spec: walkSpec.Name, Note: "Each example is one point blowup: z^q + F with F clean, the divisor, the chart and the translations. Check it with: sing lab step -p P -q Q -vars VARS -f F -divisor DIVISOR -chart CHART -t VAR=VALUE. The polynomials are up to a unit factor that is a q-th power, which does not change the invariants (see the README of lab/)."}
 	co := CandOut{Spec: s.Name, WalksFrom: walkSpec.Name}
 	for _, c := range cands {
-		co.Candidates = append(co.Candidates, CandDef{ID: c.ID, Definition: c.Definition, Bound: c.Bound})
+		co.Candidates = append(co.Candidates, CandDef{ID: c.ID, Definition: c.Definition, Bound: c.Bound, Scope: c.Scope})
 		co.Totals = append(co.Totals, CandTotal{ID: c.ID})
 	}
 	rec.Counts.Cases = len(ws)
@@ -443,7 +453,7 @@ func runWalks(ctx context.Context, s *Spec, opt Options, rec *Record, files map[
 			cc := CaseCands{P: w.c.P, N: w.c.N, Q: w.c.Q, Steps: t.Steps}
 			for i, c := range cands {
 				ct := t.cand[i]
-				r := CandResult{ID: c.ID, Steps: t.Steps, Fail: ct.Fail}
+				r := CandResult{ID: c.ID, Steps: t.Steps - ct.Skip, Fail: ct.Fail, Skip: ct.Skip}
 				if !c.Bound {
 					r.Equal, r.Down = ct.Equal, ct.Down
 				}
@@ -454,7 +464,8 @@ func runWalks(ctx context.Context, s *Spec, opt Options, rec *Record, files map[
 						co.Totals[i].FirstCase = caseName(w.c)
 					}
 				}
-				co.Totals[i].Steps += t.Steps
+				co.Totals[i].Steps += t.Steps - ct.Skip
+				co.Totals[i].Skip += ct.Skip
 				co.Totals[i].Fail += ct.Fail
 				rec.Counts.Failures += ct.Fail
 				cc.Results = append(cc.Results, r)
@@ -465,6 +476,9 @@ func runWalks(ctx context.Context, s *Spec, opt Options, rec *Record, files map[
 	files["histogram.json"] = marshal(hist)
 	if cands != nil {
 		files["candidates.json"] = marshal(co)
+		if s.Experiment == "E4" {
+			return summaryE4(s, rec, hist, co), nil
+		}
 		return summaryE2(s, rec, hist, co), nil
 	}
 	files["examples.json"] = marshal(exs)

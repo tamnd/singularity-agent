@@ -61,6 +61,7 @@ type Tally struct {
 // CandTally counts the steps of one candidate of E2.
 type CandTally struct {
 	Fail, Equal, Down int
+	Skip              int // the steps out of the scope of the candidate
 	first             *stepRec
 }
 
@@ -209,6 +210,10 @@ func (w *walker) record(en *Engine, t *Tally, s stepRec) {
 	}
 	for i, c := range w.cands {
 		ct := &t.cand[i]
+		if c.Applies != nil && !c.Applies(s.a) {
+			ct.Skip++
+			continue
+		}
 		switch {
 		case c.Fails(s.a, s.b, en.Q):
 			ct.Fail++
@@ -260,6 +265,7 @@ func (t *Tally) merge(u *Tally, examples, stabEx int) {
 		a.Fail += b.Fail
 		a.Equal += b.Equal
 		a.Down += b.Down
+		a.Skip += b.Skip
 		if a.first == nil {
 			a.first = b.first
 		}
